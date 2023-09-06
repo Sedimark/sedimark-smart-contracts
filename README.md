@@ -107,3 +107,8 @@ $ npx hardhat verify --network shimmerevm-testnet <contract address> "<contract 
     https://eips.ethereum.org/EIPS/eip-2612
     https://soliditydeveloper.com/erc20-permit
 ```
+
+3. Timestamp manipulation (the 15 seconds rule)
+```
+https://consensys.github.io/smart-contract-best-practices/development-recommendations/solidity-specific/timestamp-dependence/
+```
