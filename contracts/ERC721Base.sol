@@ -48,6 +48,12 @@ contract ERC721Base is
         _;
     }
 
+    modifier onlyFactory() {
+            require(msg.sender == _factory, "Not the NFT owner!");
+            _;
+        }
+
+
     function initialize(
         address owner,
         address factory,
@@ -76,11 +82,12 @@ contract ERC721Base is
         return true;
     }
 
+    // function called only directly by the NFT owner and not by any contract.
     function createDataToken(
         string calldata name,
         string calldata symbol,
-        // address owner should be already msg.sender
-        // address erc721address_, // it is the NFT contract that is calling the factory function. So it will be msg.sender on the other side
+        // address owner, // should be already msg.sender.
+        address erc721address_, // it is the NFT contract that is calling the factory function. So it will be msg.sender on the other side
         uint256 maxSupply_
     ) external onlyNFTOwner returns (address erc20token) {
         require(maxSupply_ > 0, "Cap and initial supply not valid");
@@ -91,6 +98,7 @@ contract ERC721Base is
             name,
             symbol,
             msg.sender, // == new DT owner = NFTowner
+            erc721address_,
             maxSupply_
         );
         deployedERC20Tokens.push(erc20token);
@@ -105,6 +113,10 @@ contract ERC721Base is
         return deployedERC20Tokens;
     }
 
+    function addNewErc20token(address erc20token) external onlyFactory {
+        deployedERC20Tokens.push(erc20token);
+    }
+
     // The following functions are overrides required by Solidity.
     function burn(uint256 tokenId) external onlyNFTOwner {
         _burn(tokenId);
@@ -117,6 +129,10 @@ contract ERC721Base is
     
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721URIStorageUpgradeable, ERC721Upgradeable) returns (bool) {
         return super.supportsInterface(interfaceId);
+    }
+
+    function balanceOf(address caller) public view override(ERC721Upgradeable, IERC721Upgradeable) returns(uint256) {
+        return super.balanceOf(caller);
     }
 
     function tokenURI(uint256 tokenId)

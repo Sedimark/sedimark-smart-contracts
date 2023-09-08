@@ -10,7 +10,7 @@ interface IERC721Factory {
         string memory name_,
         string memory symbol_,
         address owner_, // minter = DT owner = NFT owner
-        // address erc721address_, // should be the calling NFT contract = msg.sender
+        address erc721address_, // should be the calling NFT contract = msg.sender. Not true if "all in one"
         uint256 maxSupply_
     ) external returns (address erc20Instance);
 

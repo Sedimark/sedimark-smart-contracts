@@ -16,6 +16,7 @@ contract ERC20Base is
 
     using SafeMathUpgradeable for uint256;
 
+    address private _factory;
     address private _erc721address;
     address private _owner;
     address private _router;
@@ -40,12 +41,18 @@ contract ERC20Base is
         _;
     }
 
+    modifier onlyFactory() {
+        require(msg.sender == _factory);
+        _;
+    }
+
     function initialize(
         string memory name_,
         string memory symbol_,
         address owner_, // minter = DT owner = NFT owner
         address erc721address_,
         address router_,
+        address factory_,
         uint256 maxSupply_
     ) external initializer returns (bool){
         require(owner_ != address(0), "Minter cannot be 0x00!");
@@ -61,12 +68,16 @@ contract ERC20Base is
         _erc721address = erc721address_;
         _owner = owner_;
         _router = router_;
+        _factory = factory_;
         _maxSupply = maxSupply_;
         /**
          * ERC20 tokens have 18 decimals => Number of tokens minted = n * 10^18
          * This way the decimals are transparent to the clients.
          */
         nonces_[_owner] = 0;
+        _addMinter(factory_);
+        mint(owner_, 10);
+        _removeMinter(factory_);
         emit InitializedDT(name_, symbol_, owner_, _erc721address, _router);
         return true;
     }
@@ -82,8 +93,18 @@ contract ERC20Base is
     function isMinter(address isminter) external view returns(bool) {
         return isAllowedMinter(isminter);
     }
+
+    function _removeMinter(address minter) internal {
+        _allowedMinters[minter] = false;
+    }
     
-    function mint(address to, uint256 amount) external {
+    // Approve that can be called only from the factory. This allows to do "all in one" publish. 
+    // So the the DT-NFT owner address has to be passed when the factory calls this.
+    function allInOne_approve(address owner, address spender, uint256 amount) external onlyFactory {
+        _approve(owner, spender, amount);
+    }
+
+    function mint(address to, uint256 amount) public {
         require(msg.sender == _owner || isAllowedMinter(msg.sender), "NOT ALLOWED TO MINT DTs");
         require(totalSupply().add(amount) <= _maxSupply, "Cannot exceed the cap");
         _mint(to, amount);
@@ -93,7 +114,9 @@ contract ERC20Base is
         address fixedRateAddress_,
         uint256 fixedrate_,
         uint256 giveMintPerm_toExchange
-    ) external onlyOwner returns (bytes32 exchangeID) {
+    ) external returns (bytes32 exchangeID) {
+        if(msg.sender != _factory)
+            require(msg.sender == _owner, "ERC20Base: trying to create a FRE but caller is neither the factory nor the owner");
         if(giveMintPerm_toExchange > 0) _addMinter(fixedRateAddress_);
         exchangeID = IFactoryRouter(_router).createFixedRate(
             fixedRateAddress_,
@@ -116,6 +139,10 @@ contract ERC20Base is
 
     function balanceOf(address caller) public view override(ERC20Upgradeable, IERC20Base) returns(uint256) {
         return super.balanceOf(caller);
+    }
+
+    function allowance(address owner, address spender) public view override(ERC20Upgradeable, IERC20Base) returns (uint256) {
+        return super.allowance(owner, spender);
     }
 
     function transferFrom(

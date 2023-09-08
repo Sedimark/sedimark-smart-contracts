@@ -24,5 +24,15 @@ interface IERC721Base {
         string memory trust_sign
     ) external returns(bool);
 
+    function createDataToken(
+        string calldata name,
+        string calldata symbol,
+        // address owner, // should be already msg.sender.
+        address erc721address_, // it is the NFT contract that is calling the factory function. So it will be msg.sender on the other side
+        uint256 maxSupply_
+    ) external returns (address erc20token);
+
     function getNFTowner() external view returns (address owner);
+    function addNewErc20token(address erc20token) external;
+    function balanceOf(address caller) external view returns(uint256);
 }

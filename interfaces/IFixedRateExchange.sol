@@ -10,4 +10,6 @@ function setupSMRExchange_for_datatoken(
         uint256 dataTokenDecimals_,
         uint256 giveMintPerm_to_Exch_
     ) external returns (bytes32 exchangeID);
+
+    function isExchangeActive(bytes32 exchangeID) external view returns(bool);
 }

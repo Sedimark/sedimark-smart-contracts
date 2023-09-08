@@ -8,6 +8,7 @@ import "./Deployer.sol";
 import "../interfaces/IERC721Base.sol";
 import "../interfaces/IERC721Factory.sol";
 import "../interfaces/IERC20Base.sol";
+import "../interfaces/IFixedRateExchange.sol";
 
 contract ERC721Factory is Ownable, Deployer, IERC721Factory {
     using SafeMath for uint256;
@@ -22,6 +23,19 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
     address[] public erc20addresses;
 
     address private _router;
+
+    struct PublishData {
+        string name;
+        string symbol;
+        string tokenURI; // enc CID
+        string asset_download_URL;
+        string asset_hash;
+        string offering_hash;
+        string trust_sign;
+        string dt_name;
+        string dt_symbol;
+        uint256 maxSupply_; // must be > 10 otherwise mint will fail
+    }
 
     struct ContractBase {
         address baseAddress;
@@ -59,6 +73,52 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
         _router = router_;
     }
 
+    function publishAllinOne(
+        PublishData memory _publishData,
+        address fresc_address
+    ) public {
+        /** 
+         *  deploy NFT token
+        */
+        address erc721token = deployERC721Contract(
+            _publishData.name,
+            _publishData.symbol,
+            _publishData.tokenURI,
+            _publishData.asset_download_URL,
+            _publishData.asset_hash,
+            _publishData.offering_hash,
+            _publishData.trust_sign
+        );
+        IERC721Base ierc721Instance = IERC721Base(erc721token);
+        require(ierc721Instance.balanceOf(msg.sender) == 1, "NFT not minted");
+        /** 
+         *  deploy DT token and mint some tokens
+        */
+        // deployERC20Contract + addNewErc20token do the same as the 'createDataToken()' of ERC721Base.sol
+        address erc20token = deployERC20Contract(
+            _publishData.dt_name,
+            _publishData.dt_symbol,
+            msg.sender,
+            erc721token,
+            _publishData.maxSupply_
+        );
+        ierc721Instance.addNewErc20token(erc20token);
+        IERC20Base ierc20Instance = IERC20Base(erc20token);
+        require(ierc20Instance.balanceOf(msg.sender) == 10, "Mint of DTs failed");
+        /**
+         * add DT to the FR Exchange and increase allowance for the FRESC
+        */
+        bytes32 _exchangeID = ierc20Instance.createFixedRate(
+            fresc_address,
+            1e16,
+            0
+        );
+        IFixedRateExchange iFRE = IFixedRateExchange(fresc_address);
+        require(iFRE.isExchangeActive(_exchangeID), "FRE not activated. Aborting");
+        ierc20Instance.allInOne_approve(msg.sender, fresc_address, 1e18);
+        require(ierc20Instance.allowance(msg.sender, fresc_address) == 1e18, "Allowance does not match approved value");
+    }
+
     function deployERC721Contract(
         string memory name,
         string memory symbol,
@@ -67,12 +127,12 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
         string memory asset_hash,
         string memory offering_hash,
         string memory trust_sign
-    ) public {
+    ) public returns(address erc721Instance){
         require(base721ContractInfo.baseAddress != address(0), "DeployER721Contract: invalid base address");
         require(base721ContractInfo.isActive, "DeployERC721Contract: Base contract not active");
         require(msg.sender != address(0), "address(0) cannot be an owner");
 
-        address erc721Instance = deploy(base721ContractInfo.baseAddress);
+        erc721Instance = deploy(base721ContractInfo.baseAddress);
         require(erc721Instance != address(0), "deployERC721Contract: Failed to deploy new ERC721 contract");
         
         erc721addresses.push(erc721Instance);
@@ -96,14 +156,14 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
     }
 
     function deployERC20Contract(
-        string calldata name_,
-        string calldata symbol_,
+        string memory name_,
+        string memory symbol_,
         address owner_, // minter = DT owner = NFT owner
-        // address erc721address_, // should be the calling NFT contract = msg.sender
+        address erc721address_, // should be the calling NFT contract = msg.sender. Not true if "all in one"
         uint256 maxSupply_
-    ) external returns (address erc20Instance) {
-        require(createdERC721List[msg.sender] == msg.sender, "Call coming from a non existing NFT contract deployed by this factory");
-        require(owner_ == IERC721Base(createdERC721List[msg.sender]).getNFTowner(), "Provided minter is not the NFT owner!");
+    ) public returns (address erc20Instance) {
+        // require(createdERC721List[msg.sender] == msg.sender, "Call coming from a non existing NFT contract deployed by this factory");
+        // require(owner_ == IERC721Base(createdERC721List[msg.sender]).getNFTowner(), "Provided minter is not the NFT owner!");
 
         erc20Instance = deploy(base20ContractInfo.baseAddress);
         require(erc20Instance != address(0), "deployERC20Contract: Failed to deploy new ERC20 contract");
@@ -117,8 +177,10 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
             name_,
             symbol_,
             owner_,
-            msg.sender,
+            // msg.sender,
+            erc721address_,
             _router,
+            address(this),
             maxSupply_
         ), "DT initialization failed!");
         emit ERC20ContractDeployed(erc20Instance, owner_, name_, symbol_);

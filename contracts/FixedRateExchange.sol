@@ -207,6 +207,10 @@ contract FixedRateExchange {
         exchanges[exchangeId].active = true;
     }
 
+    function isExchangeActive(bytes32 exchangeID) external view returns(bool) {
+        return exchanges[exchangeID].active;
+    }
+
     /**
      * @dev fallback function
      *      this is a default fallback function in which receives

@@ -12,6 +12,7 @@ interface IERC20Base {
         address owner_, // minter = DT owner = NFT owner
         address erc721address_,
         address router_,
+        address factory_,
         uint256 maxSupply_
     ) external returns (bool);
 
@@ -28,9 +29,22 @@ interface IERC20Base {
     function isMinter(address isminter) external view returns(bool);
     function mint(address to, uint256 amount) external;
     function balanceOf(address caller) external view returns(uint256);
+    function allowance(address owner, address spender) external view returns(uint256);
     function transferFrom(
         address from,
         address to,
         uint256 amount
     ) external returns (bool);
+    
+    function createFixedRate(
+        address fixedRateAddress_,
+        uint256 fixedrate_,
+        uint256 giveMintPerm_toExchange
+    ) external returns (bytes32 exchangeID);
+
+    function allInOne_approve(
+        address owner, 
+        address spender, 
+        uint256 amount
+    ) external;
 }
