@@ -30,15 +30,15 @@ async function main() {
     obtainedAddresses.addresses.push({RouterFactory: router.address});
     console.log("RouterFactory address:", router.address);
 
-    const ERC721Factory = await ethers.getContractFactory("ERC721Factory");
-    token = await ERC721Factory.deploy(baseAddress.address, base20Address.address, router.address);
-    obtainedAddresses.addresses.push({ERC721Factory: token.address});
-    console.log("ERC721Factory address:", token.address);
-
     const FixedRateExchange = await ethers.getContractFactory("FixedRateExchange");
     const a = await FixedRateExchange.deploy(router.address);
     obtainedAddresses.addresses.push({FixedRateExchange: a.address});
     console.log("FixedRateExchange address:", a.address);
+
+    const ERC721Factory = await ethers.getContractFactory("ERC721Factory");
+    token = await ERC721Factory.deploy(baseAddress.address, base20Address.address, router.address, a.address);
+    obtainedAddresses.addresses.push({ERC721Factory: token.address});
+    console.log("ERC721Factory address:", token.address);
 
     // add factory and exchange address to router
     const box = RouterFactory.attach(router.address);

@@ -23,6 +23,7 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
     address[] public erc20addresses;
 
     address private _router;
+    address private _fresc_address;
 
     struct PublishData {
         string name;
@@ -63,7 +64,7 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
         string symbol
     );
 
-    constructor(address _base721Address, address _base20Address, address router_) {
+    constructor(address _base721Address, address _base20Address, address router_, address fresc_address_) {
         require(_base721Address != address(0), "Invalid ERC721Base contract address");
         require(_base20Address != address(0), "Invalid ERC721Base contract address");
         require(router_ != address(0), "Invalid router contract address");
@@ -71,11 +72,11 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
         addERC721Basetemplate(_base721Address);
         addERC20Basetemplate(_base20Address);
         _router = router_;
+        _fresc_address = fresc_address_;
     }
 
     function publishAllinOne(
-        PublishData memory _publishData,
-        address fresc_address
+        PublishData memory _publishData
     ) public {
         /** 
          *  deploy NFT token
@@ -104,14 +105,14 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
          * add DT to the FR Exchange and increase allowance for the FRESC
         */
         bytes32 _exchangeID = ierc20Instance.createFixedRate(
-            fresc_address,
+            _fresc_address,
             1e16,
             0
         );
-        IFixedRateExchange iFRE = IFixedRateExchange(fresc_address);
+        IFixedRateExchange iFRE = IFixedRateExchange(_fresc_address);
         require(iFRE.isExchangeActive(_exchangeID), "FRE not activated. Aborting");
-        ierc20Instance.allInOne_approve(msg.sender, fresc_address, 1e18);
-        require(ierc20Instance.allowance(msg.sender, fresc_address) == 1e18, "Allowance does not match approved value");
+        ierc20Instance.allInOne_approve(msg.sender, _fresc_address, 1e18);
+        require(ierc20Instance.allowance(msg.sender, _fresc_address) == 1e18, "Allowance does not match approved value");
     }
 
     function deployERC721Contract(

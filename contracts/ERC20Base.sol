@@ -21,6 +21,7 @@ contract ERC20Base is
     address private _owner;
     address private _router;
     uint256 private _maxSupply;
+    bool private _approve_once_called = false;
     
     mapping(address => bool) private _allowedMinters;
     mapping(address => uint256) public nonces_;
@@ -105,7 +106,9 @@ contract ERC20Base is
     // Approve that can be called only from the factory. This allows to do "all in one" publish. 
     // So the the DT-NFT owner address has to be passed when the factory calls this.
     function allInOne_approve(address owner, address spender, uint256 amount) external onlyFactory {
+        require(_approve_once_called == false, "Factory already called the approve.");
         _approve(owner, spender, amount);
+        _approve_once_called = true;
     }
 
     function mint(address to, uint256 amount) public {

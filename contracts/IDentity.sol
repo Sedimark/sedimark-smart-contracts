@@ -18,9 +18,12 @@ contract IDentity is Ownable {
     uint256 private _free_vc_id = 1;
     // vc_id => VerifiableCredential mapping
     mapping(uint256 => VerifiableCredential) private _vcId_to_VC;
+    // assume 1 vc for each eth address
+    mapping(address => uint256) private _addr_to_vcId;
 
     event NewVCRequestRegistered(uint256 vc_id, address extracted, uint256 expiration, uint256 block);
     event VC_Activated(uint256 vc_id, uint256 blockTimestamp, uint256 expirationTimestamp);
+    event VC_Revoked(uint256 vc_id);
 
     constructor() {}
 
@@ -45,12 +48,19 @@ contract IDentity is Ownable {
 
         address extractedAddress = extractSourceFromSignature(_vc_hash, _pseudo_signature);
         require(extractedAddress != address(0), "Invalid Extracted address");
+        uint256 id = _addr_to_vcId[extractedAddress];
+        if(id != 0) { // holder already has a vc
+            // let the same holder have a second VC only if its previous VC is revoked.
+            require(_vcId_to_VC[id].revoked, "Trying to issue a second VC to the same holder having the first VC still not revoked");
+        }
 
         // Initially the VC is not enabled ==> status == false.
         _vcId_to_VC[_vc_id] = VerifiableCredential(_did, extractedAddress, _issuance_date, _expiration_date, false, false);
 
         // update free vc id
         _free_vc_id+=1;
+        // update addr to vcid mapping, in case it substitues the old value of ID if the holder has a revoked VC and tries to have a new valid VC
+        _addr_to_vcId[extractedAddress] = _vc_id;
 
         emit NewVCRequestRegistered(_vc_id, _vcId_to_VC[_vc_id].vc_owner, _vcId_to_VC[_vc_id].expiration_date, block.timestamp);
     }
@@ -58,14 +68,24 @@ contract IDentity is Ownable {
     function activateVC(uint256 _vc_id) external {
         require(msg.sender != address(0), "Sender is invalid");
         require(_vc_id >= 0, "VC identitifier must be greater than 0");
-        require(_vcId_to_VC[_vc_id].status == false, "VC already activated");
-        require(block.timestamp < _vcId_to_VC[_vc_id].expiration_date, "Cannot activate VC: VC has expired");
-        require(msg.sender == address(_vcId_to_VC[_vc_id].vc_owner), "Cannot activate VC: sender is not who expcted");
+        VerifiableCredential storage vc = _vcId_to_VC[_vc_id];
+        require(vc.status == false, "VC already activated");
+        require(block.timestamp < vc.expiration_date, "Cannot activate VC: VC has expired");
+        require(msg.sender == address(vc.vc_owner), "Cannot activate VC: sender is not who expcted");
 
         // activate VC
-        _vcId_to_VC[_vc_id].status = true;
+        vc.status = true;
 
-        emit VC_Activated(_vc_id, block.timestamp, _vcId_to_VC[_vc_id].expiration_date);
+        emit VC_Activated(_vc_id, block.timestamp, vc.expiration_date);
+    }
+
+    function revokeVC(uint256 _vc_id) public onlyOwner {
+        VerifiableCredential storage vc = _vcId_to_VC[_vc_id];
+        require(vc.vc_owner != address(0), "Revoke: VC associated to the given vc_id does not exist/is invalid");
+        require(_vc_revoked(_vc_id), "VC is already revoked");
+        vc.status = false;
+        vc.revoked = true;
+        emit VC_Revoked(_vc_id);
     }
 
     function extractSourceFromSignature(bytes32 _vc_hash, bytes calldata _pseudo_signature) internal pure returns(address) {
@@ -77,7 +97,7 @@ contract IDentity is Ownable {
     // https://solidity-by-example.org/signature/
     function splitSignature(
         bytes memory sig
-    ) public pure returns (bytes32 r, bytes32 s, uint8 v) {
+    ) internal pure returns (bytes32 r, bytes32 s, uint8 v) {
         require(sig.length == 65, "invalid signature length");
 
         assembly {
@@ -97,12 +117,39 @@ contract IDentity is Ownable {
         }
     }
 
-    function isVCActive(uint256 _vc_id) external view returns(bool) {
+    function _vc_active(uint256 _vc_id) internal view returns(bool) {
+        require(_vc_id > 0, "Holder does not own a VC");
         return _vcId_to_VC[_vc_id].status;
+    }
+    function isVCActive(uint256 _vc_id) public view returns(bool) {
+        return _vc_active(_vc_id);
+    }
+    function isVCActive_Addr(address vc_holder) public view returns(bool) {
+        return _vc_active(_addr_to_vcId[vc_holder]);
     }
 
     // returns true if expired
-    function isVCExpired(uint256 _vc_id) external view returns(bool) {
+    function _vc_expired(uint256 _vc_id) internal view returns(bool) {
+        require(_vc_id > 0, "Holder does not own a VC");
         return block.timestamp > _vcId_to_VC[_vc_id].expiration_date;
+    }
+    function isVCExpired(uint256 _vc_id) public view returns(bool) {
+        return _vc_expired(_vc_id);
+    }
+    function isVCExpired_Addr(address vc_holder) public view returns(bool) {
+        return _vc_expired(_addr_to_vcId[vc_holder]);
+    }
+
+    function _vc_revoked(uint256 _vc_id) internal view returns(bool) {
+        require(_vc_id > 0, "Holder does not own a VC");
+        require(_vc_active(_vc_id), "VC is not active");
+        require(!_vc_expired(_vc_id), "VC is expired");
+        return _vcId_to_VC[_vc_id].revoked;
+    }
+    function isVCRevoked(uint256 _vc_id) public view returns(bool) {
+        return _vc_revoked(_vc_id);
+    }
+    function isVCRevoked_Addr(address vc_holder) public view returns(bool) {
+        return _vc_revoked(_addr_to_vcId[vc_holder]);
     }
 }
