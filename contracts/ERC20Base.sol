@@ -42,10 +42,11 @@ contract ERC20Base is
     }
 
     modifier onlyFactory() {
-        require(msg.sender == _factory);
+        require(msg.sender == _factory, "Not the Factory address!");
         _;
     }
 
+    // ONLY FACTORY
     function initialize(
         string memory name_,
         string memory symbol_,
@@ -69,6 +70,9 @@ contract ERC20Base is
         _owner = owner_;
         _router = router_;
         _factory = factory_;
+        
+        require(msg.sender == _factory, "Not the Factory address!");
+
         _maxSupply = maxSupply_;
         /**
          * ERC20 tokens have 18 decimals => Number of tokens minted = n * 10^18

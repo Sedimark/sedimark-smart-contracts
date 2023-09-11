@@ -49,11 +49,11 @@ contract ERC721Base is
     }
 
     modifier onlyFactory() {
-            require(msg.sender == _factory, "Not the NFT owner!");
-            _;
-        }
+        require(msg.sender == _factory, "Not the Factory address!");
+        _;
+    }
 
-
+    // ONLY FACTORY
     function initialize(
         address owner,
         address factory,
@@ -70,6 +70,9 @@ contract ERC721Base is
         __ERC721_init(name_, symbol_);
         __ERC721URIStorage_init();
         _factory = factory;
+
+        require(msg.sender == _factory, "Not the Factory address!");
+
         _safeMint(owner, 1);
         _setTokenURI(1, _tokenURI);
         _asset_download_URL = asset_download_URL;
@@ -87,7 +90,7 @@ contract ERC721Base is
         string calldata name,
         string calldata symbol,
         // address owner, // should be already msg.sender.
-        address erc721address_, // it is the NFT contract that is calling the factory function. So it will be msg.sender on the other side
+        // address erc721address_, // it is the NFT contract that is calling the factory function. So it will be msg.sender on the other side
         uint256 maxSupply_
     ) external onlyNFTOwner returns (address erc20token) {
         require(maxSupply_ > 0, "Cap and initial supply not valid");
@@ -98,8 +101,9 @@ contract ERC721Base is
             name,
             symbol,
             msg.sender, // == new DT owner = NFTowner
-            erc721address_,
-            maxSupply_
+            address(this),
+            maxSupply_,
+            false
         );
         deployedERC20Tokens.push(erc20token);
         emit TokenCreated(name, symbol, msg.sender, address(this), erc20token, 0, maxSupply_);
