@@ -35,8 +35,14 @@ async function main() {
     obtainedAddresses.addresses.push({FixedRateExchange: a.address});
     console.log("FixedRateExchange address:", a.address);
 
+    const IDentityFactory = await ethers.getContractFactory("IDentity");
+    const IDtoken = await IDentityFactory.deploy();
+    const IDentityAddress = await IDtoken.address
+    obtainedAddresses.addresses.push({IDentity: IDentityAddress});
+    console.log("IDentitySC address:", IDentityAddress);
+
     const ERC721Factory = await ethers.getContractFactory("ERC721Factory");
-    token = await ERC721Factory.deploy(baseAddress.address, base20Address.address, router.address, a.address);
+    token = await ERC721Factory.deploy(baseAddress.address, base20Address.address, router.address, a.address, IDentityAddress);
     obtainedAddresses.addresses.push({ERC721Factory: token.address});
     console.log("ERC721Factory address:", token.address);
 

@@ -121,7 +121,7 @@ contract IDentity is Ownable {
         require(_vc_id > 0, "Holder does not own a VC");
         return _vcId_to_VC[_vc_id].status;
     }
-    function isVCActive(uint256 _vc_id) public view returns(bool) {
+    function isVCActive(uint256 _vc_id) external view returns(bool) {
         return _vc_active(_vc_id);
     }
     function isVCActive_Addr(address vc_holder) public view returns(bool) {
@@ -133,7 +133,7 @@ contract IDentity is Ownable {
         require(_vc_id > 0, "Holder does not own a VC");
         return block.timestamp > _vcId_to_VC[_vc_id].expiration_date;
     }
-    function isVCExpired(uint256 _vc_id) public view returns(bool) {
+    function isVCExpired(uint256 _vc_id) external view returns(bool) {
         return _vc_expired(_vc_id);
     }
     function isVCExpired_Addr(address vc_holder) public view returns(bool) {
@@ -146,7 +146,7 @@ contract IDentity is Ownable {
         require(!_vc_expired(_vc_id), "VC is expired");
         return _vcId_to_VC[_vc_id].revoked;
     }
-    function isVCRevoked(uint256 _vc_id) public view returns(bool) {
+    function isVCRevoked(uint256 _vc_id) external view returns(bool) {
         return _vc_revoked(_vc_id);
     }
     function isVCRevoked_Addr(address vc_holder) public view returns(bool) {

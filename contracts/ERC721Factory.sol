@@ -9,6 +9,7 @@ import "../interfaces/IERC721Base.sol";
 import "../interfaces/IERC721Factory.sol";
 import "../interfaces/IERC20Base.sol";
 import "../interfaces/IFixedRateExchange.sol";
+import "../interfaces/IIDentity.sol";
 
 contract ERC721Factory is Ownable, Deployer, IERC721Factory {
     using SafeMath for uint256;
@@ -24,6 +25,7 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
 
     address private _router;
     address private _fresc_address;
+    address private _identity_addr;
 
     struct PublishData {
         string name;
@@ -36,6 +38,7 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
         string dt_name;
         string dt_symbol;
         uint256 maxSupply_; // must be > 10 otherwise mint will fail
+        uint256 vc_id;
     }
 
     struct ContractBase {
@@ -64,7 +67,7 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
         string symbol
     );
 
-    constructor(address _base721Address, address _base20Address, address router_, address fresc_address_) {
+    constructor(address _base721Address, address _base20Address, address router_, address fresc_address_, address identity_addr_) {
         require(_base721Address != address(0), "Invalid ERC721Base contract address");
         require(_base20Address != address(0), "Invalid ERC721Base contract address");
         require(router_ != address(0), "Invalid router contract address");
@@ -73,11 +76,20 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
         addERC20Basetemplate(_base20Address);
         _router = router_;
         _fresc_address = fresc_address_;
+        _identity_addr = identity_addr_;
     }
 
     function publishAllinOne(
         PublishData memory _publishData
     ) public {
+        /**
+         * Verify vc is active and not expired/revoked. The "isVCRevoked" function checks if the vc is 
+         * 1. Active
+         * 2. Not expired
+         * 3. Not revoked
+        */
+        IIDentity identity_token = IIDentity(_identity_addr);
+        require(!identity_token.isVCRevoked(_publishData.vc_id), "The user does not have a valid VC!");
         /** 
          *  deploy NFT token
         */

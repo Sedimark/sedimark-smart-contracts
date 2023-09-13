@@ -1,22 +1,25 @@
 {
   "addresses": [
     {
-      "Deployer": "0xa82fF9aFd8f496c3d6ac40E2a0F282E47488CFc9"
+      "Deployer": "0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1"
     },
     {
-      "ERC721Base": "0x1613beB3B2C4f22Ee086B2b38C1476A3cE7f78E8"
+      "ERC721Base": "0x322813Fd9A801c5507c9de605d63CEA4f2CE6c44"
     },
     {
-      "ERC20Base": "0x851356ae760d987E095750cCeb3bC6014560891C"
+      "ERC20Base": "0xa85233C63b9Ee964Add6F2cffe00Fd84eb32338f"
     },
     {
-      "RouterFactory": "0xf5059a5D33d5853360D16C683c16e67980206f36"
+      "RouterFactory": "0x4A679253410272dd5232B3Ff7cF5dbB88f295319"
     },
     {
-      "FixedRateExchange": "0x95401dc811bb5740090279Ba06cfA8fcF6113778"
+      "FixedRateExchange": "0x7a2088a1bFc9d81c55368AE168C2C02570cB814F"
     },
     {
-      "ERC721Factory": "0x998abeb3E57409262aE5b751f60747921B33613E"
+      "IDentity": "0x09635F643e140090A9A8Dcd712eD6285858ceBef"
+    },
+    {
+      "ERC721Factory": "0xc5a5C42992dECbae36851359345FE25997F5C42d"
     }
   ]
 }
