@@ -152,4 +152,11 @@ contract IDentity is Ownable {
     function isVCRevoked_Addr(address vc_holder) public view returns(bool) {
         return _vc_revoked(_addr_to_vcId[vc_holder]);
     }
+
+    function getVCownerDID(uint256 vc_id) public view returns(string memory) {
+        return _vcId_to_VC[vc_id].did;
+    }
+    function getVCownerDID_Addr(address vc_owner) public view returns(string memory) {
+        return _vcId_to_VC[_addr_to_vcId[vc_owner]].did;
+    }
 }
