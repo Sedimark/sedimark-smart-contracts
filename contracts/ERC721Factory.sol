@@ -112,7 +112,7 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
         );
         ierc721Instance.addNewErc20token(erc20token);
         IERC20Base ierc20Instance = IERC20Base(erc20token);
-        require(ierc20Instance.balanceOf(msg.sender) == 10, "Mint of DTs failed");
+        require(ierc20Instance.balanceOf(msg.sender) == 10e18, "Mint of DTs failed");
         /**
          * add DT to the FR Exchange and increase allowance for the FRESC
         */

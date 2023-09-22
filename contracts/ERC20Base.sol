@@ -81,7 +81,7 @@ contract ERC20Base is
          */
         nonces_[_owner] = 0;
         _addMinter(factory_);
-        mint(owner_, 10);
+        mint(owner_, 10e18);
         _removeMinter(factory_);
         emit InitializedDT(name_, symbol_, owner_, _erc721address, _router);
         return true;
