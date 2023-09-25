@@ -40,6 +40,13 @@ module.exports = {
       gas: 2100000, 
       gasPrice: 8000000000,
       accounts: [process.env.PRIVATE_KEY],
+    },
+    'hardhat-issuer': {
+      url: 'http://127.0.0.1:8545/',
+      chainId: 31337,
+      gas: 2100000, 
+      gasPrice: 8000000000,
+      accounts: [process.env.PRIVATE_KEY_ISSUER],
     }
   },
   etherscan: {
