@@ -40,9 +40,15 @@ Smart contracts can be deployed on the hardhat local network. It is an EVM-like 
 $ npm install
 $ npx hardhat node
 ```
+
 2. In other shell we can run the deploy script by specifying the local hardhat network
 ```sh
 $ npx hardhat run --network localhost scripts/deploy.js
+```
+
+3. To fund your addresses
+```sh
+$ npx hardhat --network localhost faucet <eth-address>
 ```
 
 ## Run the scripts
