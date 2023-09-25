@@ -1,12 +1,30 @@
 # Smart Contracts for the Mediterraneus Protocol 
 
+## Prepare environment
+
+1. Create a .env file and where o save the private key of your wallet.
+The .env file should look like this:
+```
+PRIVATE_KEY='<priv_key1>'
+PRIVATE_KEY_2='<priv_key2>'
+```
+2. In the hardhat.config.js specify the various networks to play around with different wallets
+```js
+  'shimmerevm-testnet': {
+    url: 'https://json-rpc.evm.testnet.shimmer.network',
+    chainId: 1071,
+    gas: 2100000, 
+    gasPrice: 8000000000,
+    accounts: [process.env.PRIVATE_KEY],
+  }
+```
+
 ## Requirements
-1. Solidity compiler
-2. NPM
+1. [Solidity compiler (hardhat)](https://hardhat.org/)
+2. [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) 
 
 Clone the repository and install the dependecies. 
 ```sh
-$ cd SC_DataMarketplace_samples
 $ npm install --save-dev
 ```
 
@@ -25,24 +43,6 @@ $ npx hardhat node
 2. In other shell we can run the deploy script by specifying the local hardhat network
 ```sh
 $ npx hardhat run --network localhost scripts/deploy.js
-```
-
-## Prepare environment
-1. Create a .env file and where o save the private key of your wallet.
-The .env file should look like this:
-```
-PRIVATE_KEY='<priv_key1>'
-PRIVATE_KEY_2='<priv_key2>'
-```
-2. In the hardhat.config.js specify the various networks to play around with different wallets
-```js
-  'shimmerevm-testnet': {
-    url: 'https://json-rpc.evm.testnet.shimmer.network',
-    chainId: 1071,
-    gas: 2100000, 
-    gasPrice: 8000000000,
-    accounts: [process.env.PRIVATE_KEY],
-  }
 ```
 
 ## Run the scripts
