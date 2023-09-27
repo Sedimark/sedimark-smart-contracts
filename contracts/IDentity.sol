@@ -49,9 +49,9 @@ contract IDentity is Ownable {
         address extractedAddress = extractSourceFromSignature(_vc_hash, _pseudo_signature);
         require(extractedAddress != address(0), "Invalid Extracted address");
         uint256 id = _addr_to_vcId[extractedAddress];
-        if(id != 0) { // holder already has a vc
+        if(id != 0 && !_vcId_to_VC[id].revoked) { // holder already has a vc
             // let the same holder have a second VC only if its previous VC is revoked.
-            require(_vcId_to_VC[id].revoked, "Trying to issue a second VC to the same holder having the first VC still not revoked");
+            revert("Trying to issue a second VC to the same holder having the first VC still not revoked");
         }
 
         // Initially the VC is not enabled ==> status == false.
