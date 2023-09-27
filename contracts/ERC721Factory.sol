@@ -81,7 +81,7 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
 
     function publishAllinOne(
         PublishData memory _publishData
-    ) public {
+    ) public returns(address erc721token){
         /**
          * Verify vc is active and not expired/revoked. The "isVCRevoked" function checks if the vc is 
          * 1. Active
@@ -93,7 +93,7 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
         /** 
          *  deploy NFT token
         */
-        address erc721token = deployERC721Contract(
+        erc721token = deployERC721Contract(
             _publishData
         );
         IERC721Base ierc721Instance = IERC721Base(erc721token);
@@ -125,6 +125,7 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
         require(iFRE.isExchangeActive(_exchangeID), "FRE not activated. Aborting");
         ierc20Instance.allInOne_approve(msg.sender, _fresc_address, 1e18);
         require(ierc20Instance.allowance(msg.sender, _fresc_address) == 1e18, "Allowance does not match approved value");
+        emit NFTCreated(erc721token, base721ContractInfo.baseAddress, _publishData.name, msg.sender, _publishData.symbol, _publishData.tokenURI);
     }
 
     function deployERC721Contract(

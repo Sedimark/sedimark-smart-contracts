@@ -6,6 +6,7 @@ import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import "../interfaces/IERC721Base.sol";
+import "../interfaces/IERC20Base.sol";
 import "../interfaces/IERC721Factory.sol";
 
 contract ERC721Base is 
@@ -121,6 +122,10 @@ contract ERC721Base is
         deployedERC20Tokens.push(erc20token);
     }
 
+    function getAssetDownloadURL() external view returns(string memory) {
+        return _asset_download_URL;
+    }
+
     // The following functions are overrides required by Solidity.
     function burn(uint256 tokenId) external onlyNFTOwner {
         _burn(tokenId);
@@ -146,6 +151,47 @@ contract ERC721Base is
         returns (string memory)
     {
         return super.tokenURI(tokenId);
+    }
+
+    function verifyPoP(
+        bytes calldata _eth_signature,
+        bytes32 _hash
+    ) external view returns(bool) {
+        address extractedAddress = extractSourceFromSignature(_hash, _eth_signature);
+        require(extractedAddress != address(0), "ERC721: extracted signature is 0x00");
+
+        IERC20Base ierc20Instance = IERC20Base(deployedERC20Tokens[0]);
+        // >= 1 ether cause the price is fixed to 1 for now. This needs to be changed if prices will be added.
+        return (ierc20Instance.balanceOf(extractedAddress) >= 1 ether);
+    }
+
+    function extractSourceFromSignature(bytes32 _hash, bytes calldata _pseudo_signature) internal pure returns(address) {
+        bytes32 signedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _hash));
+        (bytes32 r, bytes32 s, uint8 v) = splitSignature(_pseudo_signature);
+        return ecrecover(signedHash, v, r, s);
+    }
+
+    // https://solidity-by-example.org/signature/
+    function splitSignature(
+        bytes memory sig
+    ) internal pure returns (bytes32 r, bytes32 s, uint8 v) {
+        require(sig.length == 65, "invalid signature length");
+
+        assembly {
+            /*
+            First 32 bytes stores the length of the signature
+            add(sig, 32) = pointer of sig + 32
+            effectively, skips first 32 bytes of signature
+            mload(p) loads next 32 bytes starting at the memory address p into memory
+            */
+
+            // first 32 bytes, after the length prefix
+            r := mload(add(sig, 32))
+            // second 32 bytes
+            s := mload(add(sig, 64))
+            // final byte (first byte of the next 32 bytes)
+            v := byte(0, mload(add(sig, 96)))
+        }
     }
 
     /**
