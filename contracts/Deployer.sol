@@ -16,17 +16,17 @@ pragma solidity ^0.8.18;
  */
 contract Deployer {
 
-    event InstanceDeployed(address instance);
+  event InstanceDeployed(address instance);
 
-    // /**
-    //  * @dev deploy
-    //  *      deploy new contract instance 
-    //  * @param _logic the logic contract address
-    //  * @return  address of the new instance
-    //  */
-    function deploy(
-        address _logic
-    ) public returns (address instance) {
+  // /**
+  //  * @dev deploy
+  //  *      deploy new contract instance 
+  //  * @param _logic the logic contract address
+  //  * @return  address of the new instance
+  //  */
+  function deploy(
+    address _logic
+  ) public returns (address instance) {
     
     // Adapted from https://github.com/optionality/clone-factory/blob/32782f82dfc5a00d103a7e61a17a5dedbd1e8e9d/contracts/CloneFactory.sol
     bytes20 targetBytes = bytes20(_logic);
