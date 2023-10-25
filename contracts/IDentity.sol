@@ -66,13 +66,13 @@ contract IDentity is Ownable {
         emit NewVCRequestRegistered(_vc_id, _vcId_to_VC[_vc_id].vc_owner, _vcId_to_VC[_vc_id].expiration_date, block.timestamp);
     }
 
-    function activateVC(uint256 _vc_id) external {
+    function activateVC(uint256 _vc_id) external { 
         require(msg.sender != address(0), "Sender is invalid");
         require(_vc_id >= 0, "VC identitifier must be greater than 0");
         VerifiableCredential storage vc = _vcId_to_VC[_vc_id];
         require(vc.status == false, "VC already activated");
         require(block.timestamp < vc.expiration_date, "Cannot activate VC: VC has expired");
-        require(msg.sender == address(vc.vc_owner), "Cannot activate VC: sender is not who expcted");
+        require(msg.sender == address(vc.vc_owner), "Cannot activate VC: sender is not who expcted");  // TODO: why don't user msg.sender to recover the VC? 
 
         // activate VC
         vc.status = true;
