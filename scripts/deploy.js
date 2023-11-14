@@ -2,9 +2,12 @@ const { ethers } = require("hardhat");
 const fs = require("fs");
 
 async function main() {
-    var obtainedAddresses = {
-      addresses: []
-    };
+
+    let obtainedAddresses = {}
+    const name = "addresses"
+    obtainedAddresses[name] = {};
+
+    addresses = obtainedAddresses[name];
 
     const [deployer] = await ethers.getSigners();
     console.log("Deploying contracts with the account:", deployer.address);
@@ -12,44 +15,47 @@ async function main() {
   
     const Deployer = await ethers.getContractFactory("Deployer");
     let token = await Deployer.deploy();
-    obtainedAddresses.addresses.push({Deployer: token.address});
+    addresses.Deployer = token.address;
     console.log("Deployer address:", token.address);
     
     const ERC721Base = await ethers.getContractFactory("ERC721Base");
     const baseAddress = await ERC721Base.deploy();
-    obtainedAddresses.addresses.push({ERC721Base: baseAddress.address});
+    addresses.ERC721Base = baseAddress.address;
     console.log("ERC721Base address:", baseAddress.address);
 
     const ERC20Base = await ethers.getContractFactory("ERC20Base");
     const base20Address = await ERC20Base.deploy();
-    obtainedAddresses.addresses.push({ERC20Base: base20Address.address});
+    addresses.ERC20Base=base20Address.address;
     console.log("ERC20Base address:", base20Address.address);
 
     const RouterFactory = await ethers.getContractFactory("RouterFactory");
     const router = await RouterFactory.deploy(deployer.address);
-    obtainedAddresses.addresses.push({RouterFactory: router.address});
+    addresses.RouterFactory = router.address;
     console.log("RouterFactory address:", router.address);
 
     const FixedRateExchange = await ethers.getContractFactory("FixedRateExchange");
     const a = await FixedRateExchange.deploy(router.address);
-    obtainedAddresses.addresses.push({FixedRateExchange: a.address});
+    addresses.FixedRateExchange = a.address;
     console.log("FixedRateExchange address:", a.address);
 
     const IDentityFactory = await ethers.getContractFactory("IDentity");
     const IDtoken = await IDentityFactory.deploy();
     const IDentityAddress = await IDtoken.address
-    obtainedAddresses.addresses.push({IDentity: IDentityAddress});
+    addresses.IDentityAddress = IDentityAddress;
     console.log("IDentitySC address:", IDentityAddress);
 
     const ERC721Factory = await ethers.getContractFactory("ERC721Factory");
     token = await ERC721Factory.deploy(baseAddress.address, base20Address.address, router.address, a.address, IDentityAddress);
-    obtainedAddresses.addresses.push({ERC721Factory: token.address});
+    addresses.ERC721Factory = token.address;
     console.log("ERC721Factory address:", token.address);
 
     // add factory and exchange address to router
     const box = RouterFactory.attach(router.address);
     await box.addFactoryAddress(token.address);
     await box.addFixedRateAddress(a.address);
+
+
+    obtainedAddresses[name] = addresses;
 
     const json = JSON.stringify(obtainedAddresses, null, 2);
     await fs.promises.writeFile(__dirname.replace('scripts','addresses/contractAddresses.json'), json)
