@@ -72,7 +72,7 @@ contract IDentity is Ownable {
         VerifiableCredential storage vc = _vcId_to_VC[_vc_id];
         require(vc.status == false, "VC already activated");
         require(block.timestamp < vc.expiration_date, "Cannot activate VC: VC has expired");
-        require(msg.sender == address(vc.vc_owner), "Cannot activate VC: sender is not who expcted");  // TODO: why don't user msg.sender to recover the VC? 
+        require(msg.sender == address(vc.vc_owner), "Cannot activate VC: sender is not who expected");  // TODO: why don't user msg.sender to recover the VC? 
 
         // activate VC
         vc.status = true;
