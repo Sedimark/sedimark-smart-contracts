@@ -38,7 +38,7 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
         string dt_name;
         string dt_symbol;
         uint256 maxSupply_; // must be > 10 otherwise mint will fail
-        uint256 vc_id; // TODO: remove this 
+        // uint256 vc_id; // TODO: remove this 
     }
 
     struct ContractBase {
@@ -89,8 +89,9 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
          * 3. Not revoked
         */
         IIDentity identity_token = IIDentity(_identity_addr);
-        // TODO: Change to isVCRevoked_Addr[msg.sender]
-        require(!identity_token.isVCRevoked(_publishData.vc_id), "The user does not have a valid VC!");
+        // TODO: Change to isVCRevoked_Addr(msg.sender)
+        require(!identity_token.isVCRevoked_Addr(msg.sender), "The user does not have a valid VC!");
+        // require(!identity_token.isVCRevoked(_publishData.vc_id), "The user does not have a valid VC!");
         /** 
          *  deploy NFT token
         */

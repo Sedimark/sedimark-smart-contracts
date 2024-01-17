@@ -72,7 +72,7 @@ contract IDentity is Ownable {
         VerifiableCredential storage vc = _vcId_to_VC[_vc_id];
         require(vc.status == false, "VC already activated");
         require(block.timestamp < vc.expiration_date, "Cannot activate VC: VC has expired");
-        require(msg.sender == address(vc.vc_owner), "Cannot activate VC: sender is not who expected");  // TODO: why don't user msg.sender to recover the VC? 
+        require(msg.sender == address(vc.vc_owner), "Cannot activate VC: sender is not who expected");  // TODO: why don't user msg.sender to recover the VC.id? 
 
         // activate VC
         vc.status = true;
@@ -129,7 +129,7 @@ contract IDentity is Ownable {
     function isVCActive(uint256 _vc_id) external view returns(bool) {
         return _vc_active(_vc_id);
     }
-    function isVCActive_Addr(address vc_holder) public view returns(bool) {
+    function isVCActive_Addr(address vc_holder) external view returns(bool) {
         return _vc_active(_addr_to_vcId[vc_holder]);
     }
 
@@ -141,7 +141,7 @@ contract IDentity is Ownable {
     function isVCExpired(uint256 _vc_id) external view returns(bool) {
         return _vc_expired(_vc_id);
     }
-    function isVCExpired_Addr(address vc_holder) public view returns(bool) {
+    function isVCExpired_Addr(address vc_holder) external view returns(bool) {
         return _vc_expired(_addr_to_vcId[vc_holder]);
     }
 
@@ -154,7 +154,7 @@ contract IDentity is Ownable {
     function isVCRevoked(uint256 _vc_id) external view returns(bool) {
         return _vc_revoked(_vc_id);
     }
-    function isVCRevoked_Addr(address vc_holder) public view returns(bool) {
+    function isVCRevoked_Addr(address vc_holder) external view returns(bool) {
         return _vc_revoked(_addr_to_vcId[vc_holder]);
     }
 
