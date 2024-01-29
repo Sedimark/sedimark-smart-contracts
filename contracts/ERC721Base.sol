@@ -8,6 +8,7 @@ import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import "../interfaces/IERC721Base.sol";
 import "../interfaces/IERC20Base.sol";
 import "../interfaces/IERC721Factory.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract ERC721Base is 
     Initializable, 
@@ -155,9 +156,9 @@ contract ERC721Base is
 
     function verifyPoP(
         bytes calldata _eth_signature,
-        bytes32 _hash
+        bytes calldata _challenge // bytes32 _hash
     ) external view returns(bool) {
-        address extractedAddress = extractSourceFromSignature(_hash, _eth_signature);
+        address extractedAddress = extractSourceFromSignature(_challenge, _eth_signature);
         require(extractedAddress != address(0), "ERC721: extracted signature is 0x00");
 
         IERC20Base ierc20Instance = IERC20Base(deployedERC20Tokens[0]);
@@ -165,12 +166,23 @@ contract ERC721Base is
         return (ierc20Instance.balanceOf(extractedAddress) >= 1 ether);
     }
 
-    function extractSourceFromSignature(bytes32 _hash, bytes calldata _pseudo_signature) internal pure returns(address) {
-        bytes32 signedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _hash));
+    // TODO: define this in a library Smart Contract (almost common to IDentity.sol)
+    // function extractSourceFromSignature(bytes32 _hash, bytes calldata _pseudo_signature) internal pure returns(address) {
+    //     bytes32 signedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _hash));
+    //     (bytes32 r, bytes32 s, uint8 v) = splitSignature(_pseudo_signature);
+    //     return ecrecover(signedHash, v, r, s);
+    // }
+    function extractSourceFromSignature(bytes calldata _challenge, bytes calldata _pseudo_signature) internal pure returns(address) {
+        bytes32 signedHash = keccak256(
+            abi.encodePacked("\x19Ethereum Signed Message:\n", 
+            Strings.toString(_challenge.length), 
+            _challenge)
+        );
         (bytes32 r, bytes32 s, uint8 v) = splitSignature(_pseudo_signature);
         return ecrecover(signedHash, v, r, s);
     }
 
+    // TODO: define this in a library Smart Contract (almost common to IDentity.sol)
     // https://solidity-by-example.org/signature/
     function splitSignature(
         bytes memory sig

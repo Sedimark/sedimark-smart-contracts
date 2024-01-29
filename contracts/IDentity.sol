@@ -89,6 +89,7 @@ contract IDentity is Ownable {
         emit VC_Revoked(_vc_id);
     }
 
+    // TODO: define this in a library Smart Contract (almost common to ERC721Base.sol)
     function extractSourceFromSignature(bytes calldata _challenge, bytes calldata _pseudo_signature) internal pure returns(address) {
         bytes32 signedHash = keccak256(
             abi.encodePacked("\x19Ethereum Signed Message:\n", 
@@ -99,6 +100,7 @@ contract IDentity is Ownable {
         return ecrecover(signedHash, v, r, s);
     }
 
+    // TODO: define this in a library Smart Contract (almost common to ERC721Base.sol)
     // https://solidity-by-example.org/signature/
     function splitSignature(
         bytes memory sig
