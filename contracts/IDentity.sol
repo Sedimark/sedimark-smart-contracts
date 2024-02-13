@@ -3,6 +3,7 @@ pragma solidity ^0.8.18;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract IDentity is Ownable {
     
@@ -31,13 +32,13 @@ contract IDentity is Ownable {
        return _free_vc_id;
     }
 
-    function validate_and_store_VC(
+    function add_user (
         uint256 _vc_id,
         bytes calldata _pseudo_signature,
         string calldata _did,
         uint256 _expiration_date,
         uint256 _issuance_date,
-        bytes32 _vc_hash
+        bytes calldata _challenge
     ) external onlyOwner {
         require(_vc_id >= 0, "VC identitifier must be greater than 0");
         require(_vc_id <= _free_vc_id, "Received VC id is invalid");
@@ -46,7 +47,7 @@ contract IDentity is Ownable {
         require(block.timestamp < _expiration_date, "Got invalid/expired expiration date");
         require(_issuance_date <= block.timestamp, "Issuance date is in the future");
 
-        address extractedAddress = extractSourceFromSignature(_vc_hash, _pseudo_signature);
+        address extractedAddress = extractSourceFromSignature(_challenge, _pseudo_signature);
         require(extractedAddress != address(0), "Invalid Extracted address");
         uint256 id = _addr_to_vcId[extractedAddress];
         if(id != 0 && !_vcId_to_VC[id].revoked) { // holder already has a vc
@@ -65,13 +66,13 @@ contract IDentity is Ownable {
         emit NewVCRequestRegistered(_vc_id, _vcId_to_VC[_vc_id].vc_owner, _vcId_to_VC[_vc_id].expiration_date, block.timestamp);
     }
 
-    function activateVC(uint256 _vc_id) external {
+    function activateVC(uint256 _vc_id) external { 
         require(msg.sender != address(0), "Sender is invalid");
         require(_vc_id >= 0, "VC identitifier must be greater than 0");
         VerifiableCredential storage vc = _vcId_to_VC[_vc_id];
         require(vc.status == false, "VC already activated");
         require(block.timestamp < vc.expiration_date, "Cannot activate VC: VC has expired");
-        require(msg.sender == address(vc.vc_owner), "Cannot activate VC: sender is not who expcted");
+        require(msg.sender == address(vc.vc_owner), "Cannot activate VC: sender is not who expected");  // TODO: why don't user msg.sender to recover the VC.id? 
 
         // activate VC
         vc.status = true;
@@ -88,12 +89,18 @@ contract IDentity is Ownable {
         emit VC_Revoked(_vc_id);
     }
 
-    function extractSourceFromSignature(bytes32 _vc_hash, bytes calldata _pseudo_signature) internal pure returns(address) {
-        bytes32 signedHash = keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", _vc_hash));
+    // TODO: define this in a library Smart Contract (almost common to ERC721Base.sol)
+    function extractSourceFromSignature(bytes calldata _challenge, bytes calldata _pseudo_signature) internal pure returns(address) {
+        bytes32 signedHash = keccak256(
+            abi.encodePacked("\x19Ethereum Signed Message:\n", 
+            Strings.toString(_challenge.length), 
+            _challenge)
+        );
         (bytes32 r, bytes32 s, uint8 v) = splitSignature(_pseudo_signature);
         return ecrecover(signedHash, v, r, s);
     }
 
+    // TODO: define this in a library Smart Contract (almost common to ERC721Base.sol)
     // https://solidity-by-example.org/signature/
     function splitSignature(
         bytes memory sig
@@ -124,7 +131,7 @@ contract IDentity is Ownable {
     function isVCActive(uint256 _vc_id) external view returns(bool) {
         return _vc_active(_vc_id);
     }
-    function isVCActive_Addr(address vc_holder) public view returns(bool) {
+    function isVCActive_Addr(address vc_holder) external view returns(bool) {
         return _vc_active(_addr_to_vcId[vc_holder]);
     }
 
@@ -136,7 +143,7 @@ contract IDentity is Ownable {
     function isVCExpired(uint256 _vc_id) external view returns(bool) {
         return _vc_expired(_vc_id);
     }
-    function isVCExpired_Addr(address vc_holder) public view returns(bool) {
+    function isVCExpired_Addr(address vc_holder) external view returns(bool) {
         return _vc_expired(_addr_to_vcId[vc_holder]);
     }
 
@@ -149,7 +156,7 @@ contract IDentity is Ownable {
     function isVCRevoked(uint256 _vc_id) external view returns(bool) {
         return _vc_revoked(_vc_id);
     }
-    function isVCRevoked_Addr(address vc_holder) public view returns(bool) {
+    function isVCRevoked_Addr(address vc_holder) external view returns(bool) {
         return _vc_revoked(_addr_to_vcId[vc_holder]);
     }
 
