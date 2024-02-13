@@ -4,7 +4,7 @@ pragma solidity ^0.8.18;
 interface IIDentity {
     function getFreeVCid() external view returns(uint256);
 
-    function validate_and_store_VC(
+    function add_user(
         uint256 _vc_id,
         bytes calldata _pseudo_signature,
         string calldata _did,

@@ -32,7 +32,7 @@ contract IDentity is Ownable {
        return _free_vc_id;
     }
 
-    function validate_and_store_VC (
+    function add_user (
         uint256 _vc_id,
         bytes calldata _pseudo_signature,
         string calldata _did,

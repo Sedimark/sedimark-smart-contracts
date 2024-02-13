@@ -117,6 +117,7 @@ contract FixedRateExchange {
      * @param dtamount amount of DTs that are requested to be sold 
      */
     function sellDT(bytes32 exchangeId, uint256 dtamount) payable external activeExchange(exchangeId) {
+        //TODO: add interactions with the Identity contract
         require(dtamount > 0, "FIXEDRATE: PROVIDED A 0 DT AMOUNT");
 
         uint256 swapPrice = calcDT_to_SMR(exchangeId, dtamount);
