@@ -1,4 +1,7 @@
-// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2024 Fondazione LINKS
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 pragma solidity ^0.8.18;
 
 // source https://github.com/OpenZeppelin/openzeppelin-sdk/blob/71c9ad77e0326db079e6a643eca8568ab316d4a9/packages/lib/contracts/upgradeability/ProxyFactory.sol

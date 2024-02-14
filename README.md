@@ -118,3 +118,7 @@ $ npx hardhat verify --network shimmerevm-testnet <contract address> "<contract 
 ```
 https://consensys.github.io/smart-contract-best-practices/development-recommendations/solidity-specific/timestamp-dependence/
 ```
+
+## License
+
+[GPL-3.0-or-later](https://spdx.org/licenses/GPL-3.0-or-later.html)
