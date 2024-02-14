@@ -1,5 +1,6 @@
 {
   "name": "hardhat-project",
+  "license": "GPL-3.0-or-later",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^2.0.2",
     "@nomiclabs/hardhat-ethers": "^2.2.3",
