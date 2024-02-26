@@ -39,7 +39,7 @@ module.exports = {
       chainId: 1072,
       gas: 2100000, 
       gasPrice: 8000000000,
-      accounts: [process.env.PRIVATE_KEY],
+      accounts: [process.env.PRIVATE_KEY_ISSUER],
     },
     'hardhat-issuer': {
       url: 'http://127.0.0.1:8545/',
