@@ -24,8 +24,6 @@ PRIVATE_KEY_ISSUER='<priv_key>'
     },
 ```
 
-
-
 ## Local Deployment
 Smart contracts can be deployed on the hardhat local network. It is an EVM-like emulated chain.
 
