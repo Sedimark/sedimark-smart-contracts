@@ -8,13 +8,13 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/utils/Create2.sol";
 import "./Deployer.sol";
-import "../interfaces/IERC721Base.sol";
-import "../interfaces/IERC721Factory.sol";
-import "../interfaces/IERC20Base.sol";
+import "../interfaces/IServiceBase.sol";
+import "../interfaces/IAccessTokenBase.sol";
+import "../interfaces/IFactory.sol";
 import "../interfaces/IFixedRateExchange.sol";
-import "../interfaces/IIDentity.sol";
+import "../interfaces/IIdentity.sol";
 
-contract ERC721Factory is Ownable, Deployer, IERC721Factory {
+contract Factory is Ownable, Deployer, IFactory {
     using SafeMath for uint256;
 
     uint256 private currentNFTCount;
@@ -71,8 +71,8 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
     );
 
     constructor(address _base721Address, address _base20Address, address router_, address fresc_address_, address identity_addr_) {
-        require(_base721Address != address(0), "Invalid ERC721Base contract address");
-        require(_base20Address != address(0), "Invalid ERC721Base contract address");
+        require(_base721Address != address(0), "Invalid ServiceBase contract address");
+        require(_base20Address != address(0), "Invalid AccessTokenBase contract address");
         require(router_ != address(0), "Invalid router contract address");
         currentNFTCount = 0;
         addERC721Basetemplate(_base721Address);
@@ -91,7 +91,7 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
          * 2. Not expired
          * 3. Not revoked
         */
-        IIDentity identity_token = IIDentity(_identity_addr);
+        IIdentity identity_token = IIdentity(_identity_addr);
         require(!identity_token.isVCRevoked_Addr(msg.sender), "The user does not have a valid VC!"); 
         // require(!identity_token.isVCRevoked(_publishData.vc_id), "The user does not have a valid VC!");
         // TODO: ? check if it is active and not expired
@@ -101,7 +101,7 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
         erc721token = deployERC721Contract(
             _publishData
         );
-        IERC721Base ierc721Instance = IERC721Base(erc721token);
+        IServiceBase ierc721Instance = IServiceBase(erc721token);
         require(ierc721Instance.balanceOf(msg.sender) == 1, "NFT not minted");
         /** 
          *  deploy DT token and mint some tokens
@@ -116,7 +116,7 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
             true
         );
         ierc721Instance.addNewErc20token(erc20token);
-        IERC20Base ierc20Instance = IERC20Base(erc20token);
+        IAccessTokenBase ierc20Instance = IAccessTokenBase(erc20token);
         require(ierc20Instance.balanceOf(msg.sender) == 10e18, "Mint of DTs failed");
         /**
          * add DT to the FR Exchange and increase allowance for the FRESC
@@ -148,7 +148,7 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
         eRC721_to_owner[erc721Instance] = msg.sender;
         currentNFTCount += 1;
         
-        IERC721Base ierc721Instance = IERC721Base(erc721Instance);
+        IServiceBase ierc721Instance = IServiceBase(erc721Instance);
         require(ierc721Instance.initialize(
             msg.sender,
             address(this),
@@ -174,11 +174,11 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
         require(msg.sender != address(0), "address(0) cannot be an owner");
 
         if(is_from_all_inOne) { // the factory is calling this method (msg.sender = factory)
-            require(owner_ == IERC721Base(createdERC721List[erc721address_]).getNFTowner(), "Provided minter is not the NFT owner!");
+            require(owner_ == IServiceBase(createdERC721List[erc721address_]).getNFTowner(), "Provided minter is not the NFT owner!");
             require(createdERC721List[erc721address_] == erc721address_, "Provided NFT contract does not exist");
         } else { // the NFT owner is calling this methods leveraging the createDataToken from ERC721Base
             require(createdERC721List[msg.sender] == msg.sender, "Call coming from a non existing NFT contract deployed by this factory");
-            require(owner_ == IERC721Base(createdERC721List[msg.sender]).getNFTowner(), "Provided minter is not the NFT owner!");
+            require(owner_ == IServiceBase(createdERC721List[msg.sender]).getNFTowner(), "Provided minter is not the NFT owner!");
         }
 
         erc20Instance = deploy(base20ContractInfo.baseAddress);
@@ -188,7 +188,7 @@ contract ERC721Factory is Ownable, Deployer, IERC721Factory {
         createdERC20List[erc20Instance] = erc20Instance;
         eRC20_to_owner[erc20Instance] = owner_;
 
-        IERC20Base ierc20Instance = IERC20Base(erc20Instance);
+        IAccessTokenBase ierc20Instance = IAccessTokenBase(erc20Instance);
         require(ierc20Instance.initialize(
             name_,
             symbol_,

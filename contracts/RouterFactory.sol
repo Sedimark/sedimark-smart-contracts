@@ -4,7 +4,7 @@
 
 pragma solidity ^0.8.18;
 
-import "../interfaces/IERC721Factory.sol";
+import "../interfaces/IFactory.sol";
 import "../interfaces/IFixedRateExchange.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
@@ -96,7 +96,7 @@ contract RouterFactory {
     ) external returns (bytes32 exchangeID) {
         // Verify that the caller (DT contract) has been created by the erc721factory contract
         require(
-            IERC721Factory(_factory).createdERC20List(msg.sender) == msg.sender,
+            IFactory(_factory).createdERC20List(msg.sender) == msg.sender,
             "ROUTER: ERC20 Address is not a valid token"
         );
         // check that the fixedRateAddress is valid (must be an existing fixedrate address, so not new)
@@ -105,7 +105,7 @@ contract RouterFactory {
             "ROUTER: FIXED PRICE CONTRACT ADDRESS IS NOT VALID"
         );
         // check that received owner param is actually also the DT owner = NFT owner = Dataset owner
-        require(IERC721Factory(_factory).eRC20_to_owner(msg.sender) == owner_, "caller of FRE createFixedRate is not the DT Owner");
+        require(IFactory(_factory).eRC20_to_owner(msg.sender) == owner_, "caller of FRE createFixedRate is not the DT Owner");
 
         // use the fixedRate exchange contract to create/setup a new exchange
         exchangeID = IFixedRateExchange(fixedRateAddress_).setupSMRExchange_for_datatoken(

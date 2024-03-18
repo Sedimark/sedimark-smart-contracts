@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "../interfaces/IERC20Base.sol";
+import "../interfaces/IAccessTokenBase.sol";
 
 contract FixedRateExchange {
     using SafeMath for uint256;
@@ -129,9 +129,9 @@ contract FixedRateExchange {
 
         if(dtamount > exchanges[exchangeId].dtBalance) { // exchange does not have tokens
             // try to mint if no DT available
-            if(exchanges[exchangeId].mintPermission && IERC20Base(exchanges[exchangeId].datatoken).isMinter(address(this))) {
+            if(exchanges[exchangeId].mintPermission && IAccessTokenBase(exchanges[exchangeId].datatoken).isMinter(address(this))) {
                 // move DTs to buyer account
-                IERC20Base(exchanges[exchangeId].datatoken).mint(msg.sender, dtamount);
+                IAccessTokenBase(exchanges[exchangeId].datatoken).mint(msg.sender, dtamount);
             } else { 
                 // have to retrieve dts from the exchangeOwner
                 moveDTfromOwnerAccount(
@@ -176,10 +176,10 @@ contract FixedRateExchange {
         address to,
         uint256 dtamount
     ) internal {
-        uint256 balanceBefore = IERC20Base(dtAddress).balanceOf(to);
-        IERC20Base(dtAddress).transferFrom(from, to, dtamount);
+        uint256 balanceBefore = IAccessTokenBase(dtAddress).balanceOf(to);
+        IAccessTokenBase(dtAddress).transferFrom(from, to, dtamount);
         require(
-            IERC20Base(dtAddress).balanceOf(to) >= balanceBefore.add(dtamount),
+            IAccessTokenBase(dtAddress).balanceOf(to) >= balanceBefore.add(dtamount),
             "Transfer amount is too low"
         );
     }
@@ -191,14 +191,14 @@ contract FixedRateExchange {
         bytes32 exchangeId, 
         uint256 amount
     ) external activeExchange(exchangeId) returns(bool){
-        IERC20Base(dtaddress_).permit(
+        IAccessTokenBase(dtaddress_).permit(
             msg.sender,
             address(this),
             amount,
             type(uint256).max,
             v, r, s
         );
-        (bool sent) = IERC20Base(dtaddress_).transferFrom(msg.sender, address(this), amount);
+        (bool sent) = IAccessTokenBase(dtaddress_).transferFrom(msg.sender, address(this), amount);
         if(sent) exchanges[exchangeId].dtBalance = (exchanges[exchangeId].dtBalance).add(amount);
         return sent; 
     } 

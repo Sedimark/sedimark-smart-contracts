@@ -8,14 +8,15 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC20/ERC20Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/cryptography/ECDSAUpgradeable.sol";
-import "../interfaces/IERC721Base.sol";
+import "../interfaces/IServiceBase.sol";
+import "../interfaces/IAccessTokenBase.sol";
 import "../interfaces/IFactoryRouter.sol";
-import "../interfaces/IERC20Base.sol";
 
-contract ERC20Base is
+// ERC-20
+contract AccessTokenBase is
     Initializable,
     ERC20Upgradeable,
-    IERC20Base {
+    IAccessTokenBase {
 
     using SafeMathUpgradeable for uint256;
 
@@ -61,7 +62,7 @@ contract ERC20Base is
         uint256 maxSupply_
     ) external initializer returns (bool){
         require(owner_ != address(0), "Minter cannot be 0x00!");
-        require(owner_ == IERC721Base(erc721address_).getNFTowner(), "NOT THE NFT OWNER");
+        require(owner_ == IServiceBase(erc721address_).getNFTowner(), "NOT THE NFT OWNER");
         require(
             erc721address_ != address(0),
             "ERC721Factory address cannot be 0x00!" 
@@ -147,11 +148,11 @@ contract ERC20Base is
         return _maxSupply;
     }
 
-    function balanceOf(address caller) public view override(ERC20Upgradeable, IERC20Base) returns(uint256) {
+    function balanceOf(address caller) public view override(ERC20Upgradeable, IAccessTokenBase) returns(uint256) {
         return super.balanceOf(caller);
     }
 
-    function allowance(address owner, address spender) public view override(ERC20Upgradeable, IERC20Base) returns (uint256) {
+    function allowance(address owner, address spender) public view override(ERC20Upgradeable, IAccessTokenBase) returns (uint256) {
         return super.allowance(owner, spender);
     }
 
@@ -159,7 +160,7 @@ contract ERC20Base is
         address from,
         address to,
         uint256 amount
-    ) public override(ERC20Upgradeable, IERC20Base) returns (bool){
+    ) public override(ERC20Upgradeable, IAccessTokenBase) returns (bool){
         return super.transferFrom(from, to, amount);
     }
 
@@ -212,7 +213,7 @@ contract ERC20Base is
         bytes32 s
     ) external {
         require(deadline >= block.number, "ERC20DT EXPIRED");
-        require(owner == IERC721Base(_erc721address).getNFTowner(), "Owner not the NFT owner");
+        require(owner == IServiceBase(_erc721address).getNFTowner(), "Owner not the NFT owner");
         require(value > 0, "Cannot permit 0 value");
         uint256 nonceBefore = nonces_[owner];
         bytes32 domain_separator = DOMAIN_SEPARATOR();

@@ -7,7 +7,7 @@ pragma solidity ^0.8.18;
 /**
  * @dev Required interface of an ERC20 compliant contract.
  */
-interface IERC721Factory {
+interface IFactory {
 
     function deployERC20Contract(
         string memory name_,

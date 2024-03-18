@@ -4,7 +4,7 @@
 
 pragma solidity ^0.8.18;
 
-interface IIDentity {
+interface IIdentity {
     function getFreeVCid() external view returns(uint256);
 
     function add_user(

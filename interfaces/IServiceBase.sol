@@ -7,7 +7,7 @@ pragma solidity ^0.8.18;
 /**
  * @dev Required interface of an ERC721 compliant contract.
  */
-interface IERC721Base {
+interface IServiceBase {
     event NFTminted(
         address owner,
         string name, 

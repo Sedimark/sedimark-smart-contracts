@@ -17,46 +17,52 @@ async function main() {
     console.log("Deploying contracts with the account:", deployer.address);
     console.log("Account balance:", (await deployer.getBalance()).toString());
   
-    const Deployer = await ethers.getContractFactory("Deployer");
-    let token = await Deployer.deploy();
-    addresses.Deployer = token.address;
-    console.log("Deployer address:", token.address);
+    const DeployerSC = await ethers.getContractFactory("Deployer");
+    let deployerInstance = await DeployerSC.deploy();
+    addresses.Deployer = deployerInstance.address;
+    console.log("Deployer address:", deployerInstance.address);
     
-    const ERC721Base = await ethers.getContractFactory("ERC721Base");
-    const baseAddress = await ERC721Base.deploy();
-    addresses.ERC721Base = baseAddress.address;
-    console.log("ERC721Base address:", baseAddress.address);
+    const ServiceBase = await ethers.getContractFactory("ServiceBase");
+    const serviceBaseInstance = await ServiceBase.deploy();
+    addresses.ServiceBase = serviceBaseInstance.address;
+    console.log("ServiceBase SC address:", serviceBaseInstance.address);
 
-    const ERC20Base = await ethers.getContractFactory("ERC20Base");
-    const base20Address = await ERC20Base.deploy();
-    addresses.ERC20Base=base20Address.address;
-    console.log("ERC20Base address:", base20Address.address);
+    const AccessTokenBase = await ethers.getContractFactory("AccessTokenBase");
+    const accessTokenBaseInstance = await AccessTokenBase.deploy();
+    addresses.AccessTokenBase = accessTokenBaseInstance.address;
+    console.log("AccessTokenBase SC address:", accessTokenBaseInstance.address);
 
     const RouterFactory = await ethers.getContractFactory("RouterFactory");
-    const router = await RouterFactory.deploy(deployer.address);
-    addresses.RouterFactory = router.address;
-    console.log("RouterFactory address:", router.address);
+    const routerFactoryInstance = await RouterFactory.deploy(deployer.address);
+    addresses.RouterFactory = routerFactoryInstance.address;
+    console.log("RouterFactory SC address:", routerFactoryInstance.address);
 
     const FixedRateExchange = await ethers.getContractFactory("FixedRateExchange");
-    const a = await FixedRateExchange.deploy(router.address);
-    addresses.FixedRateExchange = a.address;
-    console.log("FixedRateExchange address:", a.address);
+    const fixedRateExchangeInstance = await FixedRateExchange.deploy(routerFactoryInstance.address);
+    addresses.FixedRateExchange = fixedRateExchangeInstance.address;
+    console.log("FixedRateExchange SC address:", fixedRateExchangeInstance.address);
 
-    const IDentityFactory = await ethers.getContractFactory("IDentity");
-    const IDtoken = await IDentityFactory.deploy();
-    const IDentityAddress = await IDtoken.address
-    addresses.IDentityAddress = IDentityAddress;
-    console.log("IDentitySC address:", IDentityAddress);
+    const Identity = await ethers.getContractFactory("Identity");
+    const identityInstance = await Identity.deploy();
+    // const identityAddress = await identityInstance.address
+    addresses.Identity = identityInstance.address;
+    console.log("Identity SC address:", identityInstance.address);
 
-    const ERC721Factory = await ethers.getContractFactory("ERC721Factory");
-    token = await ERC721Factory.deploy(baseAddress.address, base20Address.address, router.address, a.address, IDentityAddress);
-    addresses.ERC721Factory = token.address;
-    console.log("ERC721Factory address:", token.address);
+    const Factory = await ethers.getContractFactory("Factory");
+    const factoryInstance = await Factory.deploy(
+      serviceBaseInstance.address, 
+      accessTokenBaseInstance.address, 
+      routerFactoryInstance.address, 
+      fixedRateExchangeInstance.address, 
+      identityInstance.address
+    );
+    addresses.Factory = factoryInstance.address;
+    console.log("Factory SC address:", factoryInstance.address);
 
     // add factory and exchange address to router
-    const box = RouterFactory.attach(router.address);
-    await box.addFactoryAddress(token.address);
-    await box.addFixedRateAddress(a.address);
+    const box = RouterFactory.attach(routerFactoryInstance.address);
+    await box.addFactoryAddress(factoryInstance.address);
+    await box.addFixedRateAddress(fixedRateExchangeInstance.address);
 
 
     obtainedAddresses[name] = addresses;

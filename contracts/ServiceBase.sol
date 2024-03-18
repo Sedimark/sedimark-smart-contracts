@@ -8,12 +8,13 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/ERC721Upgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/token/ERC721/extensions/ERC721URIStorageUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/utils/math/SafeMathUpgradeable.sol";
-import "../interfaces/IERC721Base.sol";
-import "../interfaces/IERC20Base.sol";
-import "../interfaces/IERC721Factory.sol";
+import "../interfaces/IServiceBase.sol";
+import "../interfaces/IAccessTokenBase.sol";
+import "../interfaces/IFactory.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-contract ERC721Base is 
+// ERC721Base
+contract ServiceBase is 
     Initializable, 
     ERC721Upgradeable,
     ERC721URIStorageUpgradeable {
@@ -21,7 +22,7 @@ contract ERC721Base is
     using SafeMathUpgradeable for uint256;
 
     address private _factory;
-    address[] private deployedERC20Tokens;
+    address[] private deployedAccessTokens;
     string private _asset_download_URL;
     struct TrustMetadata {
         string asset_hash;
@@ -102,7 +103,7 @@ contract ERC721Base is
         // already checked by the onlyNFTOwner modifier
         // require(msg.sender != address(0), "ERC721Base: Minter cannot be address(0)");
 
-        erc20token = IERC721Factory(_factory).deployERC20Contract(
+        erc20token = IFactory(_factory).deployERC20Contract(
             name,
             symbol,
             msg.sender, // == new DT owner = NFTowner
@@ -110,7 +111,7 @@ contract ERC721Base is
             maxSupply_,
             false
         );
-        deployedERC20Tokens.push(erc20token);
+        deployedAccessTokens.push(erc20token);
         emit TokenCreated(name, symbol, msg.sender, address(this), erc20token, 0, maxSupply_);
     }
 
@@ -119,11 +120,11 @@ contract ERC721Base is
     }
 
     function getDTaddresses() external view returns (address[] memory) {
-        return deployedERC20Tokens;
+        return deployedAccessTokens;
     }
 
     function addNewErc20token(address erc20token) external onlyFactory {
-        deployedERC20Tokens.push(erc20token);
+        deployedAccessTokens.push(erc20token);
     }
 
     function getAssetDownloadURL() external view returns(string memory) {
@@ -164,7 +165,7 @@ contract ERC721Base is
         address extractedAddress = extractSourceFromSignature(_challenge, _eth_signature);
         require(extractedAddress != address(0), "ERC721: extracted signature is 0x00");
 
-        IERC20Base ierc20Instance = IERC20Base(deployedERC20Tokens[0]);
+        IAccessTokenBase ierc20Instance = IAccessTokenBase(deployedAccessTokens[0]);
         // >= 1 ether cause the price is fixed to 1 for now. This needs to be changed if prices will be added.
         return (ierc20Instance.balanceOf(extractedAddress) >= 1 ether);
     }
