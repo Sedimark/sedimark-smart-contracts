@@ -13,8 +13,8 @@ import "../interfaces/IAccessTokenBase.sol";
 import "../interfaces/IFactory.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-// ERC721Base
-contract ServiceBase is 
+// ERC-721
+contract ServiceBase is
     Initializable, 
     ERC721Upgradeable,
     ERC721URIStorageUpgradeable {
@@ -23,14 +23,7 @@ contract ServiceBase is
 
     address private _factory;
     address[] private deployedAccessTokens;
-    string private _asset_download_URL;
-    struct TrustMetadata {
-        string asset_hash;
-        string offering_hash;
-        string trust_sign;
-    }
-
-    TrustMetadata private _trustMetadata;
+    string private _serviceUrl;
 
     event NFTminted(
         address owner,
@@ -49,7 +42,7 @@ contract ServiceBase is
         uint256 initialSupply_
     );
 
-    modifier onlyNFTOwner() {
+    modifier onlyServiceOwner() {
         require(msg.sender == ownerOf(1), "Not the NFT owner!");
         _;
     }
@@ -66,10 +59,7 @@ contract ServiceBase is
         string memory name_, 
         string memory symbol_,
         string memory _tokenURI,
-        string memory asset_download_URL,
-        string memory asset_hash,
-        string memory offering_hash,
-        string memory trust_sign
+        string memory serviceUrl
     ) external initializer returns(bool) {
         require(owner != address(0), "Invalid NFT owner: zero address not valid!");
 
@@ -81,29 +71,25 @@ contract ServiceBase is
 
         _safeMint(owner, 1);
         _setTokenURI(1, _tokenURI);
-        _asset_download_URL = asset_download_URL;
-        _trustMetadata = TrustMetadata(
-            asset_hash,
-            offering_hash,
-            trust_sign
-        );
+        _serviceUrl = serviceUrl;
+
         emit NFTminted(owner, name_, symbol_, _factory);
         return true;
     }
 
     // function called only directly by the NFT owner and not by any contract.
-    function createDataToken(
+    function createServiceToken(
         string calldata name,
         string calldata symbol,
         // address owner, // should be already msg.sender.
         // address erc721address_, // it is the NFT contract that is calling the factory function. So it will be msg.sender on the other side
         uint256 maxSupply_
-    ) external onlyNFTOwner returns (address erc20token) {
+    ) external onlyServiceOwner returns (address accessToken) {
         require(maxSupply_ > 0, "Cap and initial supply not valid");
-        // already checked by the onlyNFTOwner modifier
+        // already checked by the onlyServiceOwner modifier
         // require(msg.sender != address(0), "ERC721Base: Minter cannot be address(0)");
 
-        erc20token = IFactory(_factory).deployERC20Contract(
+        accessToken = IFactory(_factory).deployERC20Contract(
             name,
             symbol,
             msg.sender, // == new DT owner = NFTowner
@@ -111,33 +97,33 @@ contract ServiceBase is
             maxSupply_,
             false
         );
-        deployedAccessTokens.push(erc20token);
-        emit TokenCreated(name, symbol, msg.sender, address(this), erc20token, 0, maxSupply_);
+        deployedAccessTokens.push(accessToken);
+        emit TokenCreated(name, symbol, msg.sender, address(this), accessToken, 0, maxSupply_);
     }
 
-    function getNFTowner() external view returns (address owner) {
+    function getServiceOwner() external view returns (address owner) {
         return ownerOf(1);
     }
 
-    function getDTaddresses() external view returns (address[] memory) {
+    function getATaddresses() external view returns (address[] memory) {
         return deployedAccessTokens;
     }
 
-    function addNewErc20token(address erc20token) external onlyFactory {
-        deployedAccessTokens.push(erc20token);
+    function addNewAccessToken(address accessToken) external onlyFactory {
+        deployedAccessTokens.push(accessToken);
     }
 
     function getAssetDownloadURL() external view returns(string memory) {
-        return _asset_download_URL;
+        return _serviceUrl;
     }
 
     // The following functions are overrides required by Solidity.
-    function burn(uint256 tokenId) external onlyNFTOwner {
+    function burn(uint256 tokenId) external onlyServiceOwner {
         _burn(tokenId);
     }
 
 
-    function _burn(uint256 tokenId) internal override(ERC721URIStorageUpgradeable, ERC721Upgradeable) onlyNFTOwner {
+    function _burn(uint256 tokenId) internal override(ERC721URIStorageUpgradeable, ERC721Upgradeable) onlyServiceOwner {
         super._burn(tokenId);
     }
     
@@ -158,16 +144,16 @@ contract ServiceBase is
         return super.tokenURI(tokenId);
     }
 
-    function verifyPoP(
+    function verifyProofofPurchase(
         bytes calldata _eth_signature,
         bytes calldata _challenge // bytes32 _hash
     ) external view returns(bool) {
         address extractedAddress = extractSourceFromSignature(_challenge, _eth_signature);
         require(extractedAddress != address(0), "ERC721: extracted signature is 0x00");
 
-        IAccessTokenBase ierc20Instance = IAccessTokenBase(deployedAccessTokens[0]);
+        IAccessTokenBase accessTokenInstance = IAccessTokenBase(deployedAccessTokens[0]);
         // >= 1 ether cause the price is fixed to 1 for now. This needs to be changed if prices will be added.
-        return (ierc20Instance.balanceOf(extractedAddress) >= 1 ether);
+        return (accessTokenInstance.balanceOf(extractedAddress) >= 1 ether);
     }
 
     // TODO: define this in a library Smart Contract (almost common to IDentity.sol)

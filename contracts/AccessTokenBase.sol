@@ -62,11 +62,8 @@ contract AccessTokenBase is
         uint256 maxSupply_
     ) external initializer returns (bool){
         require(owner_ != address(0), "Minter cannot be 0x00!");
-        require(owner_ == IServiceBase(erc721address_).getNFTowner(), "NOT THE NFT OWNER");
-        require(
-            erc721address_ != address(0),
-            "ERC721Factory address cannot be 0x00!" 
-        );
+        require(owner_ == IServiceBase(erc721address_).getServiceOwner(), "NOT THE NFT OWNER");
+        require(erc721address_ != address(0), "ERC721Factory address cannot be 0x00!");
         require(router_ != address(0), "ERC20: ROUTER CANNOT BE THE 0 ADDRESS");
         require(maxSupply_ > 0, "The maximum supply must be > 0");
 
@@ -213,7 +210,7 @@ contract AccessTokenBase is
         bytes32 s
     ) external {
         require(deadline >= block.number, "ERC20DT EXPIRED");
-        require(owner == IServiceBase(_erc721address).getNFTowner(), "Owner not the NFT owner");
+        require(owner == IServiceBase(_erc721address).getServiceOwner(), "Owner not the NFT owner");
         require(value > 0, "Cannot permit 0 value");
         uint256 nonceBefore = nonces_[owner];
         bytes32 domain_separator = DOMAIN_SEPARATOR();

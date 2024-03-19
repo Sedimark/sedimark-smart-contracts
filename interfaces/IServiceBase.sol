@@ -21,21 +21,18 @@ interface IServiceBase {
         string memory name_, 
         string memory symbol_,
         string memory _tokenURI,
-        string memory asset_download_URL,
-        string memory asset_hash,
-        string memory offering_hash,
-        string memory trust_sign
+        string memory serviceUrl
     ) external returns(bool);
 
-    function createDataToken(
+    function createServiceToken(
         string calldata name,
         string calldata symbol,
         // address owner, // should be already msg.sender.
-        address erc721address_, // it is the NFT contract that is calling the factory function. So it will be msg.sender on the other side
+        // address erc721address_, // it is the NFT contract that is calling the factory function. So it will be msg.sender on the other side
         uint256 maxSupply_
     ) external returns (address erc20token);
 
-    function getNFTowner() external view returns (address owner);
-    function addNewErc20token(address erc20token) external;
+    function getServiceOwner() external view returns (address owner);
+    function addNewAccessToken(address accessToken) external;
     function balanceOf(address caller) external view returns(uint256);
 }
