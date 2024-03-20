@@ -9,12 +9,14 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../interfaces/IAccessTokenBase.sol";
+import "../interfaces/IIdentity.sol";
 
 contract FixedRateExchange {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
     
     address private _router;
+    address private _identity_addr;
 
     uint256 private constant BASE = 1e18;
     uint256 public constant MIN_RATE = 1e10;
@@ -61,8 +63,9 @@ contract FixedRateExchange {
         _;
     }
 
-    constructor(address router_) {
+    constructor(address router_, address identity_addr_) {
         _router = router_;
+        _identity_addr = identity_addr_;
     }
 
     // exchange is unique per each datatoken-owner pair
@@ -120,7 +123,13 @@ contract FixedRateExchange {
      * @param dtamount amount of DTs that are requested to be sold 
      */
     function sellDT(bytes32 exchangeId, uint256 dtamount) payable external activeExchange(exchangeId) {
-        //TODO: add interactions with the Identity contract
+        /**
+         * Check that the caller has a credential that has not expired or been revoked.
+        */
+        IIdentity identity_token = IIdentity(_identity_addr);
+        require(identity_token.hasValidStatus(msg.sender), "The user does not have a valid VC!"); 
+
+
         require(dtamount > 0, "FIXEDRATE: PROVIDED A 0 DT AMOUNT");
 
         uint256 swapPrice = calcDT_to_SMR(exchangeId, dtamount);

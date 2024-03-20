@@ -82,14 +82,10 @@ contract Factory is Ownable, Deployer, IFactory {
         PublishData memory _publishData
     ) public returns(address erc721token){
         /**
-         * Verify vc is active and not expired/revoked. The "isVCRevoked" function checks if the vc is 
-         * 1. Not expired
-         * 2. Not revoked
+         * Check that the caller has a credential that has not expired or been revoked.
         */
         IIdentity identity_token = IIdentity(_identity_addr);
-        require(!identity_token.isVCRevoked_Addr(msg.sender), "The user does not have a valid VC!"); 
-        // require(!identity_token.isVCRevoked(_publishData.vc_id), "The user does not have a valid VC!");
-        // TODO: ? check if it is active and not expired
+        require(identity_token.hasValidStatus(msg.sender), "The user does not have a valid VC!"); 
         /** 
          *  deploy NFT token
         */

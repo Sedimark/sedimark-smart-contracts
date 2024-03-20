@@ -144,7 +144,7 @@ contract ServiceBase is
         return super.tokenURI(tokenId);
     }
 
-    function verifyProofofPurchase(
+    function verifyProofOfPurchase(
         bytes calldata _eth_signature,
         bytes calldata _challenge // bytes32 _hash
     ) external view returns(bool) {

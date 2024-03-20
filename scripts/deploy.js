@@ -37,16 +37,19 @@ async function main() {
     addresses.RouterFactory = routerFactoryInstance.address;
     console.log("RouterFactory SC address:", routerFactoryInstance.address);
 
-    const FixedRateExchange = await ethers.getContractFactory("FixedRateExchange");
-    const fixedRateExchangeInstance = await FixedRateExchange.deploy(routerFactoryInstance.address);
-    addresses.FixedRateExchange = fixedRateExchangeInstance.address;
-    console.log("FixedRateExchange SC address:", fixedRateExchangeInstance.address);
-
     const Identity = await ethers.getContractFactory("Identity");
     const identityInstance = await Identity.deploy();
     // const identityAddress = await identityInstance.address
     addresses.Identity = identityInstance.address;
     console.log("Identity SC address:", identityInstance.address);
+
+    const FixedRateExchange = await ethers.getContractFactory("FixedRateExchange");
+    const fixedRateExchangeInstance = await FixedRateExchange.deploy(
+      routerFactoryInstance.address,
+      identityInstance.address
+    );
+    addresses.FixedRateExchange = fixedRateExchangeInstance.address;
+    console.log("FixedRateExchange SC address:", fixedRateExchangeInstance.address);
 
     const Factory = await ethers.getContractFactory("Factory");
     const factoryInstance = await Factory.deploy(
