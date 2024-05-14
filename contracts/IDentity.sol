@@ -11,7 +11,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 contract Identity is Ownable {
     
     struct VCStatus {
-        address credentialOwner; // userEOA
+        address credentialOwner; // EOA/address of the user
         uint256 issuanceDate;
         uint256 expirationDate;
         bool revoked;
@@ -23,8 +23,7 @@ contract Identity is Ownable {
     // address to credential id (assume 1 vc for each address)
     mapping(address => uint256) private _ids;
 
-    event NewVCRequestRegistered(uint256 vc_id, address extracted, uint256 expiration, uint256 block);
-    event VC_Activated(uint256 vc_id, uint256 blockTimestamp, uint256 expirationTimestamp);
+    event VC_added(uint256 vc_id, address extracted, uint256 expiration, uint256 block);
     event VC_Revoked(uint256 vc_id);
 
     constructor() {}
@@ -63,13 +62,13 @@ contract Identity is Ownable {
         // update addr to vcid mapping, in case it substitues the old value of ID if the holder has a revoked VC and tries to have a new valid VC
         _ids[extractedAddress] = _vc_id;
 
-        emit NewVCRequestRegistered(_vc_id, _vcStatuses[_vc_id].credentialOwner, _vcStatuses[_vc_id].expirationDate, block.timestamp);
+        emit VC_added(_vc_id, _vcStatuses[_vc_id].credentialOwner, _vcStatuses[_vc_id].expirationDate, block.timestamp);
     }
 
     function revokeVC(uint256 _vc_id) public onlyOwner {
         VCStatus storage vc = _vcStatuses[_vc_id];
         require(vc.credentialOwner != address(0), "Revoke: VC associated to the given vc_id does not exist/is invalid");
-        require(_isRevoked(_vc_id), "VC is already revoked");
+        require(!_isRevoked(_vc_id), "VC is already revoked");
         vc.revoked = true;
         emit VC_Revoked(_vc_id);
     }
