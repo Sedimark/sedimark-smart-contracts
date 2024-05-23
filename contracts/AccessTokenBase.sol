@@ -235,7 +235,7 @@ contract AccessTokenBase is
         address recoveredAddress = ecrecover(digest, v, r, s); 
         require(
             recoveredAddress == owner, 
-            "ERC20 datatoken: INVALID SIGNATURE IN ERC20-PERMIT"
+            "ERC-20 token: INVALID SIGNATURE IN ERC-20-PERMIT"
         );
         emit Permit(recoveredAddress, owner, spender, value);
         emit PermitData(domain_separator, permit_hash, digest);
