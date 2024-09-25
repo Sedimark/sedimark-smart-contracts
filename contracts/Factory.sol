@@ -12,7 +12,7 @@ import "../interfaces/IServiceBase.sol";
 import "../interfaces/IAccessTokenBase.sol";
 import "../interfaces/IFactory.sol";
 import "../interfaces/IFixedRateExchange.sol";
-import "../interfaces/IIdentity.sol";
+import "../interfaces/IIDentity.sol";
 
 contract Factory is Ownable, Deployer, IFactory {
     using SafeMath for uint256;

@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../interfaces/IAccessTokenBase.sol";
-import "../interfaces/IIdentity.sol";
+import "../interfaces/IIDentity.sol";
 
 contract FixedRateExchange {
     using SafeMath for uint256;
