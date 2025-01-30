@@ -5,6 +5,12 @@
 const { ethers } = require("hardhat");
 const fs = require("fs");
 
+
+function readIdentityScAddressFromEnv(){
+  let address = process.env.IDENTITY_SC_ADDRESS;
+  return address;
+}
+
 async function main() {
 
     let obtainedAddresses = {}
@@ -37,16 +43,23 @@ async function main() {
     addresses.RouterFactory = routerFactoryInstance.address;
     console.log("RouterFactory SC address:", routerFactoryInstance.address);
 
-    const Identity = await ethers.getContractFactory("Identity");
-    const identityInstance = await Identity.deploy();
+    let identity_address = readIdentityScAddressFromEnv();
+
+    if (!identity_address)
+    {
+      const Identity = await ethers.getContractFactory("Identity");
+      const identityInstance = await Identity.deploy();
+      identity_address = identityInstance.address;
+    }
+
     // const identityAddress = await identityInstance.address
-    addresses.Identity = identityInstance.address;
-    console.log("Identity SC address:", identityInstance.address);
+    addresses.Identity = identity_address;
+    console.log("Identity SC address:", identity_address);
 
     const FixedRateExchange = await ethers.getContractFactory("FixedRateExchange");
     const fixedRateExchangeInstance = await FixedRateExchange.deploy(
       routerFactoryInstance.address,
-      identityInstance.address
+      identity_address
     );
     addresses.FixedRateExchange = fixedRateExchangeInstance.address;
     console.log("FixedRateExchange SC address:", fixedRateExchangeInstance.address);
@@ -57,7 +70,7 @@ async function main() {
       accessTokenBaseInstance.address, 
       routerFactoryInstance.address, 
       fixedRateExchangeInstance.address, 
-      identityInstance.address
+      identity_address
     );
     addresses.Factory = factoryInstance.address;
     console.log("Factory SC address:", factoryInstance.address);
