@@ -39,6 +39,11 @@ module.exports = {
       chainId: 1073,
       accounts: [process.env.PRIVATE_KEY_ISSUER],
     },
+    'sedimark-testnet': {
+      url: 'http://192.168.94.12/wasp/api/v1/chains/lnk1pqv7jhuu3lka0k4ehfauh2p50kyln8yvzry945xy8sz6uw7tg0drqxs586y/evm',
+      chainId: 1074,
+      accounts: [process.env.PRIVATE_KEY_ISSUER],
+    },
     'hardhat-issuer': {
       url: 'http://127.0.0.1:8545/',
       chainId: 31337,
