@@ -23,7 +23,7 @@ contract ServiceBase is
 
     address private _factory;
     address[] private deployedAccessTokens;
-    string private _serviceUrl;
+    string private _descriptionHash;
 
     event NFTminted(
         address owner,
@@ -59,7 +59,7 @@ contract ServiceBase is
         string memory name_, 
         string memory symbol_,
         string memory _tokenURI,
-        string memory serviceUrl
+        string memory descriptionHash
     ) external initializer returns(bool) {
         require(owner != address(0), "Invalid NFT owner: zero address not valid!");
 
@@ -71,7 +71,7 @@ contract ServiceBase is
 
         _safeMint(owner, 1);
         _setTokenURI(1, _tokenURI);
-        _serviceUrl = serviceUrl;
+        _descriptionHash = descriptionHash;
 
         emit NFTminted(owner, name_, symbol_, _factory);
         return true;
@@ -113,8 +113,8 @@ contract ServiceBase is
         deployedAccessTokens.push(accessToken);
     }
 
-    function getAssetDownloadURL() external view returns(string memory) {
-        return _serviceUrl;
+    function getDescriptionHash() external view returns(string memory) {
+        return _descriptionHash;
     }
 
     // The following functions are overrides required by Solidity.

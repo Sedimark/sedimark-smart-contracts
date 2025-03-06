@@ -40,7 +40,7 @@ module.exports = {
       accounts: [process.env.PRIVATE_KEY_ISSUER],
     },
     'sedimark-testnet': {
-      url: 'http://192.168.94.12/wasp/api/v1/chains/lnk1pqv7jhuu3lka0k4ehfauh2p50kyln8yvzry945xy8sz6uw7tg0drqxs586y/evm',
+      url: 'https://json-rpc.evm.stardust.linksfoundation.com/sedimark-chain',
       chainId: 1074,
       accounts: [process.env.PRIVATE_KEY_ISSUER],
     },

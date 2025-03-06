@@ -34,7 +34,7 @@ contract Factory is Ownable, Deployer, IFactory {
         string name;
         string symbol;
         string descriptionUri; // Content ID - CID 
-        string serviceUrl;
+        string descriptionHash;
         string dt_name;
         string dt_symbol;
         uint256 maxSupply_; // must be > 10 otherwise mint will fail
@@ -146,7 +146,7 @@ contract Factory is Ownable, Deployer, IFactory {
             _publishData.name,
             _publishData.symbol,
             _publishData.descriptionUri,
-            _publishData.serviceUrl
+            _publishData.descriptionHash
         ) == true, "Factory: Could not initialize New NFT contract");
         emit NFTCreated(erc721Instance, base721ContractInfo.baseAddress, _publishData.name, msg.sender, _publishData.symbol, _publishData.descriptionUri);
     }
