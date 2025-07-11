@@ -106,9 +106,10 @@ contract Factory is Ownable, Deployer, IFactory {
             _publishData.maxSupply_,
             true
         );
+
         ierc721Instance.addNewAccessToken(erc20token);
         IAccessTokenBase ierc20Instance = IAccessTokenBase(erc20token);
-        require(ierc20Instance.balanceOf(msg.sender) == 10e18, "Mint of DTs failed");
+        require(ierc20Instance.balanceOf(msg.sender) == _publishData.maxSupply_, "Mint of DTs failed");
         /**
          * add DT to the FR Exchange and increase allowance for the FRESC
         */
@@ -119,8 +120,8 @@ contract Factory is Ownable, Deployer, IFactory {
         );
         IFixedRateExchange iFRE = IFixedRateExchange(_fresc_address);
         require(iFRE.isExchangeActive(_exchangeID), "FRE not activated. Aborting");
-        ierc20Instance.allInOne_approve(msg.sender, _fresc_address, 1e18);
-        require(ierc20Instance.allowance(msg.sender, _fresc_address) == 1e18, "Allowance does not match approved value");
+        ierc20Instance.allInOne_approve(msg.sender, _fresc_address, _publishData.maxSupply_);
+        require(ierc20Instance.allowance(msg.sender, _fresc_address) == _publishData.maxSupply_, "Allowance does not match approved value");
         emit NFTCreated(erc721token, base721ContractInfo.baseAddress, _publishData.name, msg.sender, _publishData.symbol, _publishData.descriptionUri);
     }
 
